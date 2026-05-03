@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="maxN — 3-player game tree simulator powered by Python + Flask. Minimax, Alpha-Beta pruning with cooperative, spiteful, and zero-sum alliances." />
+  <title>maxN · 3-Player Game Tree Simulator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+
+  <!-- ── HEADER ───────────────────────────────── -->
+  <header class="hdr">
+    <div class="hdr-left">
+      <span class="hdr-logo">maxN</span>
+      <span class="hdr-tagline">3-player game tree · Python + Flask backend</span>
+    </div>
+    <div class="hdr-pills">
+      <span class="pill hp1">P1</span>
+      <span class="pill hp2">P2</span>
+      <span class="pill hp3">P3</span>
+    </div>
+    <div class="hdr-right">
+      <div class="hdr-status" id="hdr-status">ready — click canvas to place root</div>
+    </div>
+  </header>
+
+  <!-- ── COMMAND STRIP ────────────────────────── -->
+  <div class="cmd-strip">
+    <div class="cmd-group">
+      <span class="cmd-label">tree</span>
+      <button class="btn" id="btn-add">+ child</button>
+      <button class="btn btn-ghost" id="btn-del">remove</button>
+    </div>
+    <div class="cmd-sep"></div>
+    <div class="cmd-group">
+      <span class="cmd-label">file</span>
+      <button class="btn" id="btn-example">load example</button>
+      <button class="btn btn-ghost" id="btn-clear">clear</button>
+    </div>
+    <div class="cmd-sep"></div>
+    <div class="cmd-group">
+      <span class="cmd-label">solve</span>
+      <button class="btn btn-mm" id="btn-mm">▶ minimax</button>
+      <button class="btn btn-ab" id="btn-ab">✂ alpha-beta</button>
+      <button class="btn btn-ghost" id="btn-reset">↺ reset</button>
+    </div>
+    <div class="cmd-sep"></div>
+    <div class="cmd-group">
+      <button class="btn btn-ghost" id="btn-theory">theory ↗</button>
+    </div>
+    <!-- Solver indicator -->
+    <div class="solving-badge" id="solving-badge">
+      <span class="solving-dot"></span> solving…
+    </div>
+  </div>
+
+  <!-- ── WORKSPACE ─────────────────────────────── -->
+  <div class="workspace">
+
+    <!-- CANVAS (fills remaining width) -->
+    <div class="canvas-panel" id="canvas-wrap">
+      <canvas id="c"></canvas>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <aside class="ctrl-panel">
+      <div class="ctrl-scroll">
+
+        <!-- Player Strategies -->
+        <section class="sec">
+          <h2 class="sec-title">Player strategies</h2>
+
+          {% for p in range(3) %}
+          <div class="pcard">
+            <div class="pcard-top">
+              <div class="pcard-stripe" id="stripe{{ p }}"></div>
+              <span class="pcard-name" id="pname{{ p }}">Player {{ p + 1 }}</span>
+              <span class="mode-tag" id="tag{{ p }}">rational</span>
+            </div>
+            <div class="pcard-body">
+              <select class="pcard-select" id="mode{{ p }}">
+                <option value="rational">Rational — maximise own score</option>
+                <option value="cooperative">Cooperative — help an ally</option>
+                <option value="spiteful">Spiteful — hurt an enemy</option>
+                <option value="zero_sum">Zero-sum — beat everyone</option>
+              </select>
+              <div class="pcard-extras" id="ex{{ p }}">
+                <div class="extra-line" id="er-ally{{ p }}">
+                  <label>Ally</label>
+                  <select id="ally{{ p }}">
+                    {% for q in range(3) %}{% if q != p %}
+                    <option value="{{ q }}">P{{ q + 1 }}</option>
+                    {% endif %}{% endfor %}
+                  </select>
+                </div>
+                <div class="extra-line" id="er-cw{{ p }}">
+                  <label>Weight</label>
+                  <input type="number" id="cw{{ p }}" value="1.0" step="0.1" min="0" max="5" />
+                </div>
+                <div class="extra-line" id="er-en{{ p }}">
+                  <label>Target</label>
+                  <select id="en{{ p }}">
+                    {% for q in range(3) %}{% if q != p %}
+                    <option value="{{ q }}">P{{ q + 1 }}</option>
+                    {% endif %}{% endfor %}
+                  </select>
+                </div>
+                <div class="extra-line" id="er-sw{{ p }}">
+                  <label>Weight</label>
+                  <input type="number" id="sw{{ p }}" value="1.0" step="0.1" min="0" max="5" />
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </section>
+
+        <!-- Scenarios -->
+        <section class="sec">
+          <h2 class="sec-title">Scenarios</h2>
+          <div class="preset-list">
+            <button class="preset-item" data-preset="rational">
+              <span class="preset-num">§1</span>All rational (baseline)
+            </button>
+            <button class="preset-item" data-preset="p1p2coop">
+              <span class="preset-num" style="color:var(--coop)">§2</span>P1 &amp; P2 cooperate
+            </button>
+            <button class="preset-item" data-preset="p1spite">
+              <span class="preset-num" style="color:var(--spite)">§3</span>P1 spites P2
+            </button>
+            <button class="preset-item" data-preset="zerosum">
+              <span class="preset-num" style="color:var(--zero)">§4</span>All zero-sum
+            </button>
+            <button class="preset-item" data-preset="chaos">
+              <span class="preset-num" style="color:var(--pruned)">§5</span>Mixed / chaos
+            </button>
+          </div>
+        </section>
+
+        <!-- Selected Node -->
+        <section class="sec">
+          <h2 class="sec-title">Selected node</h2>
+          <div id="node-card" class="info-card">
+            <span class="empty">— select a node</span>
+          </div>
+          <div id="leaf-ed" class="leaf-ed">
+            <div class="le-row">
+              <span class="le-mark le-p1">P1</span>
+              <span class="le-label">score</span>
+              <input class="le-input" type="number" id="v1" value="0" />
+            </div>
+            <div class="le-row">
+              <span class="le-mark le-p2">P2</span>
+              <span class="le-label">score</span>
+              <input class="le-input" type="number" id="v2" value="0" />
+            </div>
+            <div class="le-row">
+              <span class="le-mark le-p3">P3</span>
+              <span class="le-label">score</span>
+              <input class="le-input" type="number" id="v3" value="0" />
+            </div>
+          </div>
+        </section>
+
+        <!-- Result -->
+        <section class="sec">
+          <h2 class="sec-title">Result</h2>
+          <div id="result-card" class="info-card">
+            <span class="empty">— run an algorithm</span>
+          </div>
+        </section>
+
+        <!-- Legend -->
+        <section class="sec">
+          <h2 class="sec-title">Key</h2>
+          <div class="legend">
+            <div class="leg-row">
+              <svg width="16" height="16"><circle cx="8" cy="8" r="6" fill="none" stroke="var(--p1)" stroke-width="2"/></svg>
+              <span>P1 node (terracotta)</span>
+            </div>
+            <div class="leg-row">
+              <svg width="16" height="16"><circle cx="8" cy="8" r="6" fill="none" stroke="var(--p2)" stroke-width="2"/></svg>
+              <span>P2 node (prussian blue)</span>
+            </div>
+            <div class="leg-row">
+              <svg width="16" height="16"><circle cx="8" cy="8" r="6" fill="none" stroke="var(--p3)" stroke-width="2"/></svg>
+              <span>P3 node (forest green)</span>
+            </div>
+            <div class="leg-row">
+              <svg width="16" height="4"><line x1="0" y1="2" x2="16" y2="2" stroke="var(--opt-stroke)" stroke-width="2.5"/></svg>
+              <span>Optimal path</span>
+            </div>
+            <div class="leg-row">
+              <svg width="16" height="4"><line x1="0" y1="2" x2="16" y2="2" stroke="var(--pruned)" stroke-width="1.5" stroke-dasharray="3,2"/></svg>
+              <span>Pruned branch</span>
+            </div>
+            <div class="leg-row">
+              <svg width="16" height="16"><circle cx="8" cy="8" r="5" fill="none" stroke="var(--coop)" stroke-width="1.5" stroke-dasharray="2,2"/></svg>
+              <span>Non-rational strategy ring</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- How to -->
+        <section class="sec sec-last">
+          <h2 class="sec-title">How to use</h2>
+          <ol class="how-list">
+            <li>Set strategy per player (left panel)</li>
+            <li>Click canvas → place root node</li>
+            <li>Select node → click + child</li>
+            <li>Click a leaf → edit (P1, P2, P3) scores</li>
+            <li>Click Minimax or Alpha-Beta</li>
+            <li>Switch scenario → re-solve &amp; compare</li>
+          </ol>
+          <div class="shortcut-table">
+            <div class="sc-row"><kbd>A</kbd><span>add child</span></div>
+            <div class="sc-row"><kbd>Del</kbd><span>remove node</span></div>
+            <div class="sc-row"><kbd>M</kbd><span>minimax</span></div>
+            <div class="sc-row"><kbd>B</kbd><span>alpha-beta</span></div>
+            <div class="sc-row"><kbd>E</kbd><span>example</span></div>
+            <div class="sc-row"><kbd>R</kbd><span>reset</span></div>
+          </div>
+        </section>
+
+      </div>
+    </aside>
+  </div>
+
+  <!-- ── FOOTER ─────────────────────────────────── -->
+  <footer class="ftr">
+    <span>maxN · 3-player alliance game tree · Python/Flask backend · Luckhardt &amp; Irani (AAAI-86)</span>
+    <span id="ftr-count">0 nodes</span>
+  </footer>
+
+  <!-- ── THEORY MODAL ──────────────────────────── -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-hdr">
+        <h2 class="modal-title">Why "just maximise own score" isn't enough</h2>
+        <button class="modal-close" id="modal-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="theory-block" style="border-left-color:var(--p2)">
+          <h3>① Rational — classic maxN</h3>
+          <p>Each player picks the child that maximises their slot in the <code>(P1, P2, P3)</code> tuple. Utility = <code>own</code>. The baseline selfish agent.</p>
+        </div>
+        <div class="theory-block" style="border-left-color:var(--coop)">
+          <h3>② Cooperative — alliance</h3>
+          <p>Utility = <code>own + w × ally</code>. A cooperative player sacrifices personal score to benefit their ally. This changes which branch they choose, demonstrating that rational self-interest and cooperation diverge.</p>
+          <p class="theory-eg">Example (w=1): option (3,5,2) scores 3+5=8 vs (5,1,1) scoring 5+1=6 → cooperative P1 gives up 2 own points to give ally 4 extra.</p>
+        </div>
+        <div class="theory-block" style="border-left-color:var(--spite)">
+          <h3>③ Spiteful — dushmani</h3>
+          <p>Utility = <code>own − w × enemy</code>. The spiteful player penalises outcomes that benefit their enemy, even at personal cost. Common in political games, predatory pricing, competitive auctions.</p>
+          <p class="theory-eg">Example (w=1.5): option (3,4,1) scores 4−1.5=2.5 vs (2,5,4) scoring 5−6=−1 → spiteful P2 accepts lower own score to crush enemy.</p>
+        </div>
+        <div class="theory-block" style="border-left-color:var(--zero)">
+          <h3>④ Zero-sum</h3>
+          <p>Utility = <code>own − Σ(others)</code>. When scores sum to a constant across all leaves, this is equivalent to 2-player minimax MAX — maximising own = minimising everyone else. Verify this equivalence using the simulator.</p>
+        </div>
+        <div class="theory-block" style="border-left-color:var(--p1)">
+          <h3>⑤ Alpha-Beta with alliances</h3>
+          <p>Standard 2-player α-β requires zero-sum. For 3 non-zero-sum players this solver uses <strong>shallow pruning</strong> (Luckhardt &amp; Irani, AAAI-86): each player tracks a floor — the best utility they secured at the nearest ancestor where they moved. A branch is pruned when the current player's best already meets that floor.</p>
+          <p>All algorithms run <strong>server-side in Python</strong>. The browser sends your tree as JSON, Python solves it, and sends back the annotated result.</p>
+        </div>
+        <p class="theory-ref">Luckhardt, C. A., &amp; Irani, K. B. (1986). An algorithmic solution of N-person games. <em>AAAI-86</em>, 158–162.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/layout.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/draw.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
