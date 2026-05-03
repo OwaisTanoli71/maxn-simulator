@@ -1,5 +1,10 @@
 # maxN · 3-Player Game Tree Simulator
-🔗 **Live Demo:** [maxn-simulator.vercel.app](https://maxn-simulator.vercel.app)
+
+![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python)
+![Flask](https://img.shields.io/badge/Flask-3.0.3-black?logo=flask)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Deploy](https://img.shields.io/badge/Deploy-Render%20%7C%20Railway%20%7C%20PythonAnywhere-purple)
+![Algorithm](https://img.shields.io/badge/Algorithm-maxN%20%2B%20Alpha--Beta-orange)
 
 🔗 **Live Demo:** [maxn-simulator.vercel.app](https://maxn-simulator.vercel.app)
 
