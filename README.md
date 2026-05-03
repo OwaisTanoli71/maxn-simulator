@@ -42,7 +42,7 @@ maxn-simulator/
 ### Step 1 — Clone the repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/maxn-simulator.git
+git clone https://github.com/OwaisTanoli71/maxn-simulator.git
 cd maxn-simulator
 ```
 
