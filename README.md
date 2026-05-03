@@ -1,11 +1,7 @@
 # maxN · 3-Player Game Tree Simulator
 🔗 **Live Demo:** [maxn-simulator.vercel.app](https://maxn-simulator.vercel.app)
 
-![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python)
-![Flask](https://img.shields.io/badge/Flask-3.0.3-black?logo=flask)
-![License](https://img.shields.io/badge/License-MIT-green)
-![Deploy](https://img.shields.io/badge/Deploy-Render%20%7C%20Railway%20%7C%20PythonAnywhere-purple)
-![Algorithm](https://img.shields.io/badge/Algorithm-maxN%20%2B%20Alpha--Beta-orange)
+🔗 **Live Demo:** [maxn-simulator.vercel.app](https://maxn-simulator.vercel.app)
 
 A full-stack Python/Flask web app for visualising **3-player Minimax** and **Alpha-Beta Pruning** with a complete alliance system.
 
@@ -18,11 +14,10 @@ Features a modern, responsive, glassmorphic UI, and 6 built-in examples specific
 ## Project Structure
 
 ```
-maxn-project/
+maxn-simulator/
 ├── app.py                  ← Flask routes & API endpoints
 ├── engine.py               ← All game algorithms (Minimax, Alpha-Beta)
 ├── requirements.txt        ← Python dependencies
-├── Procfile                ← For Render / Railway deployment
 ├── templates/
 │   └── index.html          ← Jinja2 HTML template
 └── static/
@@ -39,19 +34,26 @@ maxn-project/
 
 ## Run Locally
 
-### Step 1 — Install Python dependencies
+### Step 1 — Clone the repository
+
+```bash
+git clone https://github.com/YOUR_USERNAME/maxn-simulator.git
+cd maxn-simulator
+```
+
+### Step 2 — Install Python dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### Step 2 — Run the Flask server
+### Step 3 — Run the Flask server
 
 ```bash
 python app.py
 ```
 
-### Step 3 — Open in browser
+### Step 4 — Open in browser
 
 ```
 http://localhost:5000
@@ -100,80 +102,6 @@ http://localhost:5000
 
 ---
 
-## Deploying — Step by Step
-
----
-
-### Option A · Render (Recommended — free tier, no credit card)
-
-**Step 1 — Push to GitHub**
-
-1. Go to [github.com](https://github.com) → sign in → click **+** → **New repository**
-2. Name it `maxn-simulator`, set **Public**, click **Create repository**
-3. Upload all files:
-
-```bash
-cd maxn-project
-git init
-git add .
-git commit -m "Initial commit"
-git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/maxn-simulator.git
-git push -u origin main
-```
-
-**Step 2 — Deploy on Render**
-
-1. Go to [render.com](https://render.com) → sign up free (use GitHub login)
-2. Click **New +** → **Web Service**
-3. Connect your GitHub account → select `maxn-simulator` repo
-4. Fill in settings:
-   - **Name:** `maxn-simulator`
-   - **Runtime:** `Python 3`
-   - **Build Command:** `pip install -r requirements.txt`
-   - **Start Command:** `gunicorn app:app`
-5. Click **Create Web Service**
-6. Wait ~2 minutes → get your URL: `https://maxn-simulator.onrender.com`
-
-✅ **Free tier:** spins down after 15 min of inactivity, wakes on request.
-
----
-
-### Option B · Railway (fast, $5 free credit)
-
-1. Go to [railway.app](https://railway.app) → sign in with GitHub
-2. Click **New Project** → **Deploy from GitHub repo**
-3. Select your `maxn-simulator` repo
-4. Railway auto-detects Python and reads `Procfile`
-5. Click **Deploy** → get URL in ~1 minute
-
----
-
-### Option C · PythonAnywhere (100% free, always on)
-
-1. Go to [pythonanywhere.com](https://pythonanywhere.com) → sign up free
-2. Go to **Files** tab → upload your project files
-3. Go to **Web** tab → click **Add a new web app**
-4. Choose **Flask** → Python 3.10
-5. Set **Source code:** `/home/YOUR_USERNAME/maxn-project`
-6. Set **WSGI file** to point to your `app.py`
-7. In the WSGI config file, change:
-   ```python
-   from app import app as application
-   ```
-8. Click **Reload**
-9. Your URL: `https://YOUR_USERNAME.pythonanywhere.com`
-
-✅ **Always free** — no sleep, 512MB storage, custom domain supported.
-
----
-
-### Option D · GitHub Pages (static only — NOT for Python)
-
-GitHub Pages only serves static files. Since this app needs a Python backend, use one of the options above instead.
-
----
-
 ## Keyboard Shortcuts
 
 | Key   | Action                        |
@@ -211,5 +139,3 @@ Standard 2-player α-β requires zero-sum. For 3 non-zero-sum players this uses 
 ## Reference
 
 > Luckhardt, C. A., & Irani, K. B. (1986). An algorithmic solution of N-person games. _AAAI-86_, 158–162.
-
----
